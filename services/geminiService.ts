@@ -103,17 +103,21 @@ export const sendMessageToGemini = async (
                 history: historyContent
             });
 
-            // Prepare message parts
+            // Gửi tin nhắn theo đúng format SDK @google/genai
             let result;
             if (imageBase64) {
-                // Với image, truyền array của parts
-                result = await chat.sendMessage([
-                    { text: message },
-                    { inlineData: { mimeType: "image/jpeg", data: imageBase64 } }
-                ]);
+                // Với image, kết hợp text và image trong message
+                result = await chat.sendMessage({
+                    message: [
+                        { text: message },
+                        { inlineData: { mimeType: "image/jpeg", data: imageBase64 } }
+                    ]
+                });
             } else {
-                // Với text, truyền string trực tiếp
-                result = await chat.sendMessage(message);
+                // Với text, sử dụng format { message: string }
+                result = await chat.sendMessage({
+                    message: message
+                });
             }
 
             const responseText = result.text || "";
