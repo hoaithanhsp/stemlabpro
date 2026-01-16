@@ -27,6 +27,13 @@ export const AVAILABLE_MODELS = [
     { id: "gemini-2.5-flash", name: "Gemini 2.5 Flash" }
 ];
 
+// Hàm reset chat session
+export const resetChat = () => {
+    // Reset any stateful chat state if needed
+    // Currently no global state to reset
+    console.log("Chat session reset");
+};
+
 // Helper to get client
 const getClient = (apiKey: string) => {
     if (!apiKey) throw new Error("API Key is missing. Please enter your API key in Settings.");
