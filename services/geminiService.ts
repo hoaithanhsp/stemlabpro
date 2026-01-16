@@ -1,11 +1,34 @@
 import { GoogleGenAI, Chat } from "@google/genai";
 import { SYSTEM_INSTRUCTION } from "../constants";
 
+const API_KEY_STORAGE_KEY = "stemlab_gemini_api_key";
+
 let chatSession: Chat | null = null;
 
+// API Key Management Functions
+export const getApiKey = (): string | null => {
+  return localStorage.getItem(API_KEY_STORAGE_KEY);
+};
+
+export const setApiKey = (apiKey: string): void => {
+  localStorage.setItem(API_KEY_STORAGE_KEY, apiKey);
+  // Reset chat session khi key thay đổi
+  chatSession = null;
+};
+
+export const hasApiKey = (): boolean => {
+  const key = getApiKey();
+  return !!key && key.trim().length > 0;
+};
+
+export const removeApiKey = (): void => {
+  localStorage.removeItem(API_KEY_STORAGE_KEY);
+  chatSession = null;
+};
+
 const getClient = () => {
-  const apiKey = process.env.API_KEY;
-  if (!apiKey) throw new Error("API Key not found");
+  const apiKey = getApiKey();
+  if (!apiKey) throw new Error("API Key not found. Please enter your Gemini API key.");
   return new GoogleGenAI({ apiKey });
 };
 
