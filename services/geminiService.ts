@@ -69,12 +69,28 @@ export const sendMessageToGemini = async (
             const ai = getClient(apiKey);
 
             // Prepare history
-            // Gemini SDK expects history as Content objects
-            // We must filter out "Error" messages from history
-            const validHistory = history.filter(msg => !msg.isError && !msg.isLoading);
+            // Gemini SDK yêu cầu history phải:
+            // 1. Bắt đầu bằng tin nhắn từ user (không phải model)
+            // 2. Không có tin nhắn lỗi hoặc loading
+            // 3. Các parts không được rỗng
+            const validHistory = history.filter(msg =>
+                !msg.isError &&
+                !msg.isLoading &&
+                msg.text &&
+                msg.text.trim() !== ''
+            );
 
-            const historyContent: Content[] = validHistory.map(msg => ({
-                role: msg.role,
+            // Tìm index của tin nhắn user đầu tiên
+            const firstUserIndex = validHistory.findIndex(msg => msg.role === 'user');
+
+            // Chỉ lấy history từ tin nhắn user đầu tiên trở đi
+            const trimmedHistory = firstUserIndex >= 0
+                ? validHistory.slice(firstUserIndex)
+                : [];
+
+            // Chuyển đổi sang format Content của Gemini
+            const historyContent: Content[] = trimmedHistory.map(msg => ({
+                role: msg.role as 'user' | 'model',
                 parts: [{ text: msg.text }]
             }));
 
