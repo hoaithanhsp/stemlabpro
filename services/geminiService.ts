@@ -90,16 +90,14 @@ export const sendMessageToGemini = async (
             // Prepare message parts
             let result;
             if (imageBase64) {
-                result = await chat.sendMessage({
-                    parts: [
-                        { text: message },
-                        { inlineData: { mimeType: "image/jpeg", data: imageBase64 } }
-                    ]
-                });
+                // Với image, truyền array của parts
+                result = await chat.sendMessage([
+                    { text: message },
+                    { inlineData: { mimeType: "image/jpeg", data: imageBase64 } }
+                ]);
             } else {
-                result = await chat.sendMessage({
-                    parts: [{ text: message }]
-                });
+                // Với text, truyền string trực tiếp
+                result = await chat.sendMessage(message);
             }
 
             const responseText = result.text || "";
