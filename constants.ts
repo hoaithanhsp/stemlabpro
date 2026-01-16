@@ -129,9 +129,9 @@ Template bắt buộc:
     </div>
 
     <!-- Challenge Modal -->
-    <div id="challenge-modal" class="modal">
-        <div class="modal-content">
-            <button onclick="document.getElementById('challenge-modal').style.display='none'" style="position:absolute; top:15px; right:15px; background:none; color:#999; padding:0;">✕</button>
+    <div id="challenge-modal" class="modal" onclick="this.style.display='none'">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button onclick="document.getElementById('challenge-modal').style.display='none'" style="position:absolute; top:15px; right:15px; background:none; color:#999; padding:0; font-size:1.5rem; cursor:pointer;">✕</button>
             <h2 style="margin-top:0; color:#0f766e;">🎮 Chế độ Thử Thách</h2>
             
             <div id="challenge-menu">
@@ -154,8 +154,8 @@ Template bắt buộc:
                     <strong>Nhiệm vụ:</strong> <span id="challenge-target-text">...</span>
                 </div>
                 <div class="timer-display" id="challenge-timer">00</div>
-                <button onclick="checkChallengeSolution()" style="width:100%; font-size:1.2rem; margin-bottom:10px;">✅ Kiểm Tra Kết Quả</button>
-                <button onclick="quitChallenge()" class="secondary" style="width:100%;">❌ Đầu hàng</button>
+                <button onclick="checkChallengeSolution()" style="width:100%; font-size:1.2rem; margin-bottom:10px;">✅ Kiểm Tra</button>
+                <button onclick="quitChallenge()" class="secondary" style="width:100%; background:#fee2e2; color:#dc2626; border:2px solid #fecaca;">❌ Hủy</button>
             </div>
             
             <div id="leaderboard-view" style="display:none;">
