@@ -85,6 +85,23 @@
         /* Animation */
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fade-up { animation: fadeIn 0.5s ease-out forwards; }
+        @keyframes fadeInModal { from { opacity: 0; } to { opacity: 1; } }
+        .animate-fade-in { animation: fadeInModal 0.2s ease-out forwards; }
+        
+        /* Fix scroll issues */
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+        #root {
+            height: 100%;
+            overflow: hidden;
+        }
+        /* Allow modal content to scroll if needed */
+        .modal-scrollable {
+            max-height: 90vh;
+            overflow-y: auto;
+        }
     </style>
     <script type="importmap">
     {
