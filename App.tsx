@@ -2,10 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
-import { sendMessageToGemini, resetChat, AVAILABLE_MODELS } from './services/geminiService';
+import { initializeChat, sendMessageToGemini, resetChat } from './services/geminiService';
 import PreviewFrame from './components/PreviewFrame';
 import LibraryDrawer from './components/LibraryDrawer';
-import SettingsModal from './components/SettingsModal';
 import { ChatMessage } from './types';
 
 // ==========================================
@@ -49,7 +48,7 @@ const Sidebar = ({ onViewChange, currentView, onLibraryOpen }: any) => (
     <div className="p-4 border-t border-slate-200/50">
       <div className="flex items-center gap-3 p-2 bg-slate-50 rounded-xl border border-slate-100">
         <div className="size-10 rounded-lg bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">
-          AJ
+           AJ
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-xs font-bold text-slate-900 truncate">Alex Johnson</p>
@@ -63,15 +62,15 @@ const Sidebar = ({ onViewChange, currentView, onLibraryOpen }: any) => (
 
 const Dashboard = ({ onStartSim, onFileUpload }: any) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
-
+  
   return (
     <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
       <div className="mb-8 animate-fade-up">
         <h2 className="text-3xl font-bold text-white mb-2 drop-shadow-sm">Chào mừng trở lại, Nhà khoa học!</h2>
         <p className="text-white/90 max-w-2xl text-lg">Phòng thí nghiệm ảo của bạn đã sẵn sàng. Hãy tạo một mô phỏng mới hoặc tiếp tục công việc nghiên cứu còn dang dở.</p>
       </div>
-
-      <div className="glass-panel p-6 rounded-2xl shadow-xl border border-white/40 mb-10 animate-fade-up" style={{ animationDelay: '0.1s' }}>
+      
+      <div className="glass-panel p-6 rounded-2xl shadow-xl border border-white/40 mb-10 animate-fade-up" style={{animationDelay: '0.1s'}}>
         <div className="flex items-center gap-2 mb-6">
           <div className="size-8 bg-success-lime rounded-lg flex items-center justify-center text-background-dark shadow-sm">
             <span className="material-symbols-outlined font-bold">add_circle</span>
@@ -80,82 +79,82 @@ const Dashboard = ({ onStartSim, onFileUpload }: any) => {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div onClick={() => fileInputRef.current?.click()} className="group relative flex flex-col items-center justify-center p-8 border-2 border-dashed border-slate-200 rounded-xl hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer text-center bg-white/50">
-            <input type="file" ref={fileInputRef} className="hidden" onChange={onFileUpload} />
-            <span className="material-symbols-outlined text-4xl text-primary mb-4 group-hover:scale-110 transition-transform">upload_file</span>
-            <h4 className="font-bold text-slate-900 mb-1">Nhập bài thí nghiệm</h4>
-            <p className="text-xs text-slate-500">File PDF, DOCX, hoặc XLSX</p>
+             <input type="file" ref={fileInputRef} className="hidden" onChange={onFileUpload} />
+             <span className="material-symbols-outlined text-4xl text-primary mb-4 group-hover:scale-110 transition-transform">upload_file</span>
+             <h4 className="font-bold text-slate-900 mb-1">Nhập bài thí nghiệm</h4>
+             <p className="text-xs text-slate-500">File PDF, DOCX, hoặc XLSX</p>
           </div>
           <div onClick={() => onStartSim("Tôi muốn nhập hướng dẫn bài Lab...")} className="group relative flex flex-col items-center justify-center p-8 border-2 border-dashed border-slate-200 rounded-xl hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer text-center bg-white/50">
-            <span className="material-symbols-outlined text-4xl text-primary mb-4 group-hover:scale-110 transition-transform">edit_note</span>
-            <h4 className="font-bold text-slate-900 mb-1">Dán hướng dẫn</h4>
-            <p className="text-xs text-slate-500">Nhập hoặc dán văn bản bài Lab</p>
+             <span className="material-symbols-outlined text-4xl text-primary mb-4 group-hover:scale-110 transition-transform">edit_note</span>
+             <h4 className="font-bold text-slate-900 mb-1">Dán hướng dẫn</h4>
+             <p className="text-xs text-slate-500">Nhập hoặc dán văn bản bài Lab</p>
           </div>
           <div onClick={() => fileInputRef.current?.click()} className="group relative flex flex-col items-center justify-center p-8 border-2 border-dashed border-slate-200 rounded-xl hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer text-center bg-white/50">
-            <span className="material-symbols-outlined text-4xl text-primary mb-4 group-hover:scale-110 transition-transform">camera_enhance</span>
-            <h4 className="font-bold text-slate-900 mb-1">Quét ảnh OCR</h4>
-            <p className="text-xs text-slate-500">Quét ảnh từ sách hoặc sơ đồ</p>
+             <span className="material-symbols-outlined text-4xl text-primary mb-4 group-hover:scale-110 transition-transform">camera_enhance</span>
+             <h4 className="font-bold text-slate-900 mb-1">Quét ảnh OCR</h4>
+             <p className="text-xs text-slate-500">Quét ảnh từ sách hoặc sơ đồ</p>
           </div>
         </div>
       </div>
-
-      <div className="mb-6 flex items-center justify-between animate-fade-up" style={{ animationDelay: '0.2s' }}>
+      
+      <div className="mb-6 flex items-center justify-between animate-fade-up" style={{animationDelay: '0.2s'}}>
         <h3 className="text-2xl font-bold text-white drop-shadow-sm">Mô phỏng nổi bật</h3>
         <div className="flex gap-2">
           {['Toán học', 'Vật lý', 'Tin học'].map(tag => (
-            <span key={tag} className="px-3 py-1 bg-white/20 text-white rounded-full text-xs font-bold backdrop-blur-sm cursor-pointer hover:bg-white/30 transition-colors border border-white/20">{tag}</span>
+              <span key={tag} className="px-3 py-1 bg-white/20 text-white rounded-full text-xs font-bold backdrop-blur-sm cursor-pointer hover:bg-white/30 transition-colors border border-white/20">{tag}</span>
           ))}
         </div>
       </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-up" style={{ animationDelay: '0.3s' }}>
-        {/* Sim Card 1 */}
-        <div className="glass-panel group rounded-2xl overflow-hidden border border-white/40 shadow-lg hover:-translate-y-1 transition-all">
-          <div className="h-40 relative overflow-hidden bg-slate-900 flex items-center justify-center">
-            <div className="absolute inset-0 opacity-40 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-teal-400 via-transparent to-transparent"></div>
-            <span className="material-symbols-outlined text-6xl text-white/20">functions</span>
-            <div className="absolute top-3 left-3 px-2 py-1 bg-teal-600 text-white text-[10px] font-black uppercase rounded shadow-sm">Toán học</div>
-          </div>
-          <div className="p-5">
-            <h4 className="text-lg font-bold text-slate-900 mb-2">Trường Vector 3D</h4>
-            <p className="text-sm text-slate-500 mb-4 line-clamp-2">Trực quan hóa sự phân kỳ và độ xoáy phức tạp trong hệ tọa độ ba chiều.</p>
-            <button onClick={() => onStartSim("Tạo mô phỏng Trường Vector 3D")} className="w-full bg-primary text-white h-9 px-4 rounded-lg text-sm font-bold group-hover:shadow-lg group-hover:shadow-primary/40 transition-all flex items-center justify-center gap-2 hover:bg-primary-dark">
-              <span className="material-symbols-outlined text-base">play_arrow</span>
-              <span>Bắt đầu Lab</span>
-            </button>
-          </div>
-        </div>
-        {/* Sim Card 2 */}
-        <div className="glass-panel group rounded-2xl overflow-hidden border border-white/40 shadow-lg hover:-translate-y-1 transition-all">
-          <div className="h-40 relative overflow-hidden bg-slate-900 flex items-center justify-center">
-            <div className="absolute inset-0 opacity-40 bg-[linear-gradient(45deg,_#14b8a6_0%,_transparent_100%)]"></div>
-            <span className="material-symbols-outlined text-6xl text-white/20">architecture</span>
-            <div className="absolute top-3 left-3 px-2 py-1 bg-teal-500 text-white text-[10px] font-black uppercase rounded shadow-sm">Vật lý</div>
-          </div>
-          <div className="p-5">
-            <h4 className="text-lg font-bold text-slate-900 mb-2">Con lắc Điều hòa</h4>
-            <p className="text-sm text-slate-500 mb-4 line-clamp-2">Nghiên cứu hiện tượng cộng hưởng và giao thoa trong các hệ dao động liên kết.</p>
-            <button onClick={() => onStartSim("Tạo mô phỏng Con lắc Điều hòa")} className="w-full bg-primary text-white h-9 px-4 rounded-lg text-sm font-bold group-hover:shadow-lg group-hover:shadow-primary/40 transition-all flex items-center justify-center gap-2 hover:bg-primary-dark">
-              <span className="material-symbols-outlined text-base">play_arrow</span>
-              <span>Bắt đầu Lab</span>
-            </button>
-          </div>
-        </div>
-        {/* Sim Card 3 */}
-        <div className="glass-panel group rounded-2xl overflow-hidden border border-white/40 shadow-lg hover:-translate-y-1 transition-all">
-          <div className="h-40 relative overflow-hidden bg-slate-900 flex items-center justify-center">
-            <div className="absolute inset-0 opacity-20 bg-[repeating-linear-gradient(90deg,_#333_0px,_#333_1px,_transparent_1px,_transparent_20px)]"></div>
-            <span className="material-symbols-outlined text-6xl text-white/20">data_object</span>
-            <div className="absolute top-3 left-3 px-2 py-1 bg-emerald-600 text-white text-[10px] font-black uppercase rounded shadow-sm">Tin học</div>
-          </div>
-          <div className="p-5">
-            <h4 className="text-lg font-bold text-slate-900 mb-2">Trực quan hóa Sắp xếp</h4>
-            <p className="text-sm text-slate-500 mb-4 line-clamp-2">So sánh hiệu suất QuickSort, MergeSort và BubbleSort với các tập dữ liệu thực tế.</p>
-            <button onClick={() => onStartSim("Tạo mô phỏng thuật toán Sắp xếp")} className="w-full bg-primary text-white h-9 px-4 rounded-lg text-sm font-bold group-hover:shadow-lg group-hover:shadow-primary/40 transition-all flex items-center justify-center gap-2 hover:bg-primary-dark">
-              <span className="material-symbols-outlined text-base">play_arrow</span>
-              <span>Bắt đầu Lab</span>
-            </button>
-          </div>
-        </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-up" style={{animationDelay: '0.3s'}}>
+         {/* Sim Card 1 */}
+         <div className="glass-panel group rounded-2xl overflow-hidden border border-white/40 shadow-lg hover:-translate-y-1 transition-all">
+            <div className="h-40 relative overflow-hidden bg-slate-900 flex items-center justify-center">
+                <div className="absolute inset-0 opacity-40 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-teal-400 via-transparent to-transparent"></div>
+                <span className="material-symbols-outlined text-6xl text-white/20">functions</span>
+                <div className="absolute top-3 left-3 px-2 py-1 bg-teal-600 text-white text-[10px] font-black uppercase rounded shadow-sm">Toán học</div>
+            </div>
+            <div className="p-5">
+                <h4 className="text-lg font-bold text-slate-900 mb-2">Trường Vector 3D</h4>
+                <p className="text-sm text-slate-500 mb-4 line-clamp-2">Trực quan hóa sự phân kỳ và độ xoáy phức tạp trong hệ tọa độ ba chiều.</p>
+                <button onClick={() => onStartSim("Tạo mô phỏng Trường Vector 3D")} className="w-full bg-primary text-white h-9 px-4 rounded-lg text-sm font-bold group-hover:shadow-lg group-hover:shadow-primary/40 transition-all flex items-center justify-center gap-2 hover:bg-primary-dark">
+                    <span className="material-symbols-outlined text-base">play_arrow</span>
+                    <span>Bắt đầu Lab</span>
+                </button>
+            </div>
+         </div>
+         {/* Sim Card 2 */}
+         <div className="glass-panel group rounded-2xl overflow-hidden border border-white/40 shadow-lg hover:-translate-y-1 transition-all">
+            <div className="h-40 relative overflow-hidden bg-slate-900 flex items-center justify-center">
+                <div className="absolute inset-0 opacity-40 bg-[linear-gradient(45deg,_#14b8a6_0%,_transparent_100%)]"></div>
+                <span className="material-symbols-outlined text-6xl text-white/20">architecture</span>
+                <div className="absolute top-3 left-3 px-2 py-1 bg-teal-500 text-white text-[10px] font-black uppercase rounded shadow-sm">Vật lý</div>
+            </div>
+            <div className="p-5">
+                <h4 className="text-lg font-bold text-slate-900 mb-2">Con lắc Điều hòa</h4>
+                <p className="text-sm text-slate-500 mb-4 line-clamp-2">Nghiên cứu hiện tượng cộng hưởng và giao thoa trong các hệ dao động liên kết.</p>
+                <button onClick={() => onStartSim("Tạo mô phỏng Con lắc Điều hòa")} className="w-full bg-primary text-white h-9 px-4 rounded-lg text-sm font-bold group-hover:shadow-lg group-hover:shadow-primary/40 transition-all flex items-center justify-center gap-2 hover:bg-primary-dark">
+                    <span className="material-symbols-outlined text-base">play_arrow</span>
+                    <span>Bắt đầu Lab</span>
+                </button>
+            </div>
+         </div>
+         {/* Sim Card 3 */}
+         <div className="glass-panel group rounded-2xl overflow-hidden border border-white/40 shadow-lg hover:-translate-y-1 transition-all">
+            <div className="h-40 relative overflow-hidden bg-slate-900 flex items-center justify-center">
+                <div className="absolute inset-0 opacity-20 bg-[repeating-linear-gradient(90deg,_#333_0px,_#333_1px,_transparent_1px,_transparent_20px)]"></div>
+                <span className="material-symbols-outlined text-6xl text-white/20">data_object</span>
+                <div className="absolute top-3 left-3 px-2 py-1 bg-emerald-600 text-white text-[10px] font-black uppercase rounded shadow-sm">Tin học</div>
+            </div>
+            <div className="p-5">
+                <h4 className="text-lg font-bold text-slate-900 mb-2">Trực quan hóa Sắp xếp</h4>
+                <p className="text-sm text-slate-500 mb-4 line-clamp-2">So sánh hiệu suất QuickSort, MergeSort và BubbleSort với các tập dữ liệu thực tế.</p>
+                <button onClick={() => onStartSim("Tạo mô phỏng thuật toán Sắp xếp")} className="w-full bg-primary text-white h-9 px-4 rounded-lg text-sm font-bold group-hover:shadow-lg group-hover:shadow-primary/40 transition-all flex items-center justify-center gap-2 hover:bg-primary-dark">
+                    <span className="material-symbols-outlined text-base">play_arrow</span>
+                    <span>Bắt đầu Lab</span>
+                </button>
+            </div>
+         </div>
       </div>
     </div>
   );
@@ -168,12 +167,7 @@ const Dashboard = ({ onStartSim, onFileUpload }: any) => {
 function App() {
   const [currentView, setCurrentView] = useState<'home' | 'workspace'>('home');
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
-
-  // App Settings
-  const [apiKey, setApiKey] = useState('');
-  const [currentModel, setCurrentModel] = useState<string>(AVAILABLE_MODELS[0].id);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-
+  
   // Workspace State
   const [input, setInput] = useState('');
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([
@@ -182,82 +176,58 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [currentCode, setCurrentCode] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
-
+  
   const chatEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Load Settings from LocalStorage on mount
-  useEffect(() => {
-    const storedKey = localStorage.getItem('gemini_api_key');
-    const storedModel = localStorage.getItem('gemini_model');
-
-    if (storedKey) setApiKey(storedKey);
-    if (storedModel) setCurrentModel(storedModel);
-
-    // If no key is found, and we are in workspace, we could prompt.
-  }, []);
-
   useEffect(() => {
     if (currentView === 'workspace') {
-      chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
   }, [chatHistory, currentView]);
 
-  const handleSaveSettings = (key: string, model: string) => {
-    setApiKey(key);
-    setCurrentModel(model);
-    localStorage.setItem('gemini_api_key', key);
-    localStorage.setItem('gemini_model', model);
-    setIsSettingsOpen(false);
-  };
-
   const switchToWorkspace = (initialPrompt?: string) => {
-    setCurrentView('workspace');
-    if (initialPrompt) {
-      setTimeout(() => {
-        setInput(initialPrompt);
-      }, 100);
-    }
+      setCurrentView('workspace');
+      if (initialPrompt) {
+          // A bit of a hack to set state and send immediately
+          setTimeout(() => {
+             setInput(initialPrompt);
+             // handleSendMessage would need to be called here or user clicks send
+             // For better UX, we just set input.
+          }, 100);
+      }
   };
 
   const handleSendMessage = async () => {
     if ((!input.trim() && !file) || isLoading) return;
 
-    if (!apiKey) {
-      setIsSettingsOpen(true);
-      return;
-    }
-
     const userMsg: ChatMessage = { role: 'user', text: input || (file ? `[Gửi file: ${file.name}]` : '') };
     setChatHistory(prev => [...prev, userMsg]);
     setIsLoading(true);
     setInput('');
-    setCurrentView('workspace');
+    setCurrentView('workspace'); // Ensure we are in workspace
 
     try {
       let imageBase64: string | undefined = undefined;
       if (file) {
-        if (file.type.startsWith('image/')) {
-          imageBase64 = await new Promise<string>((resolve) => {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-              const result = reader.result as string;
-              const base64Clean = result.split(',')[1];
-              resolve(base64Clean);
-            }
-            reader.readAsDataURL(file);
-          });
-        }
-        setFile(null);
+          if (file.type.startsWith('image/')) {
+              imageBase64 = await new Promise<string>((resolve) => {
+                  const reader = new FileReader();
+                  reader.onloadend = () => {
+                     const result = reader.result as string;
+                     const base64Clean = result.split(',')[1];
+                     resolve(base64Clean);
+                  }
+                  reader.readAsDataURL(file);
+              });
+          }
+          setFile(null); 
       }
 
-      // Call service with apiKey and model info
-      const response = await sendMessageToGemini(apiKey, currentModel, userMsg.text, chatHistory, imageBase64);
-      const responseText = response.text;
-
+      const responseText = await sendMessageToGemini(userMsg.text, imageBase64);
       const codeBlockRegex = /```html([\s\S]*?)```/;
       const match = responseText.match(codeBlockRegex);
-
+      
       let displayResponse = responseText;
       let generatedHtml = null;
 
@@ -268,9 +238,8 @@ function App() {
       }
 
       setChatHistory(prev => [...prev, { role: 'model', text: displayResponse }]);
-    } catch (error: any) {
-      const errorMessage = error.message || 'Lỗi không xác định';
-      setChatHistory(prev => [...prev, { role: 'model', text: `⛔ ${errorMessage}`, isError: true }]);
+    } catch (error) {
+      setChatHistory(prev => [...prev, { role: 'model', text: '⚠️ Lỗi kết nối AI.', isError: true }]);
     } finally {
       setIsLoading(false);
     }
@@ -279,9 +248,10 @@ function App() {
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setFile(e.target.files[0]);
+      // If uploaded from Dashboard, switch to workspace and prompt user
       if (currentView === 'home') {
-        setCurrentView('workspace');
-        setChatHistory(prev => [...prev, { role: 'model', text: `📂 Đã nhận file: ${e.target.files![0].name}. Hãy mô tả yêu cầu của bạn.` }]);
+          setCurrentView('workspace');
+          setChatHistory(prev => [...prev, { role: 'model', text: `📂 Đã nhận file: ${e.target.files![0].name}. Hãy mô tả yêu cầu của bạn.` }]);
       }
     }
   };
@@ -295,202 +265,178 @@ function App() {
 
   return (
     <div className="flex h-screen overflow-hidden gradient-bg font-display">
-      <Sidebar
-        onViewChange={setCurrentView}
-        currentView={currentView}
-        onLibraryOpen={() => setIsLibraryOpen(true)}
+      <Sidebar 
+        onViewChange={setCurrentView} 
+        currentView={currentView} 
+        onLibraryOpen={() => setIsLibraryOpen(true)} 
       />
-
-      <SettingsModal
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-        apiKey={apiKey}
-        currentModel={currentModel}
-        onSave={handleSaveSettings}
-      />
-
+      
       <main className="flex-1 flex flex-col overflow-hidden relative">
         {/* Header */}
         <header className="h-16 glass-panel border-b border-teal-100/20 px-8 flex items-center justify-between z-10 shrink-0">
-          <div className="flex items-center gap-4 flex-1">
-            <div className="relative max-w-md w-full group">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">search</span>
-              <input
-                className="w-full bg-slate-50/50 border-transparent rounded-full py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/50 focus:bg-white transition-all placeholder:text-slate-400"
-                placeholder="Tìm kiếm mô phỏng, hoặc nhập lệnh nhanh..."
-                type="text"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    setInput(e.currentTarget.value);
-                    e.currentTarget.value = '';
-                    switchToWorkspace();
-                  }
-                }}
-              />
+            <div className="flex items-center gap-4 flex-1">
+                <div className="relative max-w-md w-full group">
+                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">search</span>
+                    <input 
+                        className="w-full bg-slate-50/50 border-transparent rounded-full py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/50 focus:bg-white transition-all placeholder:text-slate-400" 
+                        placeholder="Tìm kiếm mô phỏng, hoặc nhập lệnh nhanh..." 
+                        type="text"
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                setInput(e.currentTarget.value);
+                                e.currentTarget.value = '';
+                                switchToWorkspace();
+                                // We can trigger send message here if we pass state carefully, 
+                                // but for now let's just focus the main input in workspace or use effect.
+                                // Simplifying:
+                            }
+                        }}
+                    />
+                </div>
             </div>
-          </div>
-          <div className="flex items-center gap-3">
-            {!apiKey && (
-              <div onClick={() => setIsSettingsOpen(true)} className="flex items-center gap-1 text-red-100 bg-red-500/80 px-3 py-1.5 rounded-full text-xs font-bold cursor-pointer hover:bg-red-500 animate-pulse">
-                <span className="material-symbols-outlined text-sm">warning</span>
-                Lấy API key để sử dụng app
-              </div>
-            )}
-            <button
-              onClick={() => setIsSettingsOpen(true)}
-              className="flex items-center gap-2 bg-white/20 hover:bg-white/40 text-white rounded-full px-3 py-1.5 text-sm font-medium transition-colors border border-white/20"
-            >
-              <span className="material-symbols-outlined text-sm">settings</span>
-              {apiKey ? 'Cấu hình' : 'Nhập API Key'}
-            </button>
-
-            <button
-              onClick={() => { resetChat(); setChatHistory([{ role: 'model', text: 'Đã reset phiên làm việc.' }]); setCurrentCode(null); }}
-              className="h-9 px-4 flex items-center gap-2 bg-primary/10 text-primary hover:bg-primary/20 rounded-full text-sm font-bold transition-all"
-            >
-              <span className="material-symbols-outlined text-lg">refresh</span>
-              <span>Reset</span>
-            </button>
-            <button className="h-10 px-4 flex items-center gap-2 bg-primary text-white rounded-full text-sm font-bold shadow-md hover:bg-primary-dark transition-all">
-              <span className="material-symbols-outlined text-lg">rocket_launch</span>
-              <span>Nâng cấp</span>
-            </button>
-          </div>
+            <div className="flex items-center gap-3">
+                <button className="size-10 flex items-center justify-center rounded-full hover:bg-teal-50 text-slate-600 relative transition-colors">
+                    <span className="material-symbols-outlined">notifications</span>
+                    <span className="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-white"></span>
+                </button>
+                <button 
+                    onClick={() => { resetChat(); setChatHistory([{ role: 'model', text: 'Đã reset phiên làm việc.' }]); setCurrentCode(null); }}
+                    className="h-9 px-4 flex items-center gap-2 bg-primary/10 text-primary hover:bg-primary/20 rounded-full text-sm font-bold transition-all"
+                >
+                    <span className="material-symbols-outlined text-lg">refresh</span>
+                    <span>Reset</span>
+                </button>
+                <button className="h-10 px-4 flex items-center gap-2 bg-primary text-white rounded-full text-sm font-bold shadow-md hover:bg-primary-dark transition-all">
+                    <span className="material-symbols-outlined text-lg">rocket_launch</span>
+                    <span>Nâng cấp</span>
+                </button>
+            </div>
         </header>
 
         {/* Content Area */}
         {currentView === 'home' ? (
-          <Dashboard onStartSim={(prompt: string) => { setInput(prompt); setCurrentView('workspace'); }} onFileUpload={handleFileUpload} />
+             <Dashboard onStartSim={(prompt: string) => { setInput(prompt); setCurrentView('workspace'); }} onFileUpload={handleFileUpload} />
         ) : (
-          <div className="flex-1 flex overflow-hidden p-4 gap-4 bg-slate-50/50">
-            {/* Chat Panel */}
-            <div className={`flex flex-col glass-panel rounded-2xl shadow-lg border border-white/40 transition-all duration-300 ${currentCode ? 'w-1/3 min-w-[380px]' : 'w-full max-w-4xl mx-auto'}`}>
-              {/* Chat Header */}
-              <div className="p-4 border-b border-slate-100 flex justify-between items-center">
-                <div className="flex items-center gap-2 text-primary font-bold">
-                  <span className="material-symbols-outlined">smart_toy</span>
-                  <span>Trợ lý Lab</span>
-                  <span className="ml-2 px-2 py-0.5 bg-primary/10 text-primary text-[10px] rounded-full uppercase tracking-wider">
-                    {AVAILABLE_MODELS.find(m => m.id === currentModel)?.name || 'Custom'}
-                  </span>
-                </div>
-                {file && (
-                  <span className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-lg flex items-center gap-1">
-                    <span className="material-symbols-outlined text-sm">attach_file</span>
-                    {file.name}
-                    <button onClick={() => setFile(null)} className="hover:text-red-500 ml-1">×</button>
-                  </span>
-                )}
-              </div>
-
-              {/* Chat Messages */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
-                {chatHistory.map((msg, idx) => (
-                  <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div
-                      className={`max-w-[85%] rounded-2xl px-5 py-3 shadow-sm text-sm leading-relaxed ${msg.role === 'user'
-                          ? 'bg-primary text-white rounded-br-sm'
-                          : 'bg-white border border-slate-100 text-slate-800 rounded-bl-sm'
-                        } ${msg.isError ? 'bg-red-50 border-red-200 text-red-600' : ''}`}
-                    >
-                      <ReactMarkdown
-                        remarkPlugins={[remarkMath]}
-                        rehypePlugins={[rehypeKatex]}
-                        className="markdown-content"
-                        components={{
-                          a: ({ node, ...props }) => <a className="underline hover:opacity-80 font-bold" target="_blank" rel="noreferrer" {...props} />
-                        }}
-                      >
-                        {msg.text}
-                      </ReactMarkdown>
-                      {msg.isError && (
-                        <div className="mt-2 text-[10px] uppercase font-bold text-red-500 flex items-center gap-1">
-                          <span className="material-symbols-outlined text-sm">error</span>
-                          Đã dừng do lỗi
+             <div className="flex-1 flex overflow-hidden p-4 gap-4 bg-slate-50/50">
+                {/* Chat Panel */}
+                <div className={`flex flex-col glass-panel rounded-2xl shadow-lg border border-white/40 transition-all duration-300 ${currentCode ? 'w-1/3 min-w-[380px]' : 'w-full max-w-4xl mx-auto'}`}>
+                    {/* Chat Header */}
+                    <div className="p-4 border-b border-slate-100 flex justify-between items-center">
+                        <div className="flex items-center gap-2 text-primary font-bold">
+                            <span className="material-symbols-outlined">smart_toy</span>
+                            <span>Trợ lý Lab</span>
                         </div>
-                      )}
+                        {file && (
+                            <span className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-lg flex items-center gap-1">
+                                <span className="material-symbols-outlined text-sm">attach_file</span>
+                                {file.name}
+                                <button onClick={() => setFile(null)} className="hover:text-red-500 ml-1">×</button>
+                            </span>
+                        )}
                     </div>
-                  </div>
-                ))}
-                {isLoading && (
-                  <div className="flex justify-start">
-                    <div className="bg-white rounded-2xl rounded-bl-sm px-4 py-3 border border-slate-100 shadow-sm">
-                      <div className="flex space-x-1.5 items-center h-5">
-                        <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce"></div>
-                        <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce delay-75"></div>
-                        <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce delay-150"></div>
-                      </div>
+
+                    {/* Chat Messages */}
+                    <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+                        {chatHistory.map((msg, idx) => (
+                        <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                            <div 
+                                className={`max-w-[85%] rounded-2xl px-5 py-3 shadow-sm text-sm leading-relaxed ${
+                                    msg.role === 'user' 
+                                    ? 'bg-primary text-white rounded-br-sm' 
+                                    : 'bg-white border border-slate-100 text-slate-800 rounded-bl-sm'
+                                } ${msg.isError ? 'bg-red-50 border-red-200 text-red-600' : ''}`}
+                            >
+                                <ReactMarkdown 
+                                    remarkPlugins={[remarkMath]} 
+                                    rehypePlugins={[rehypeKatex]}
+                                    className="markdown-content"
+                                    components={{
+                                        a: ({node, ...props}) => <a className="underline hover:opacity-80 font-bold" target="_blank" rel="noreferrer" {...props} />
+                                    }}
+                                >
+                                    {msg.text}
+                                </ReactMarkdown>
+                            </div>
+                        </div>
+                        ))}
+                        {isLoading && (
+                             <div className="flex justify-start">
+                                <div className="bg-white rounded-2xl rounded-bl-sm px-4 py-3 border border-slate-100 shadow-sm">
+                                  <div className="flex space-x-1.5 items-center h-5">
+                                    <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce"></div>
+                                    <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce delay-75"></div>
+                                    <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce delay-150"></div>
+                                  </div>
+                                </div>
+                             </div>
+                        )}
+                        <div ref={chatEndRef} />
                     </div>
-                  </div>
+
+                    {/* Input Area */}
+                    <div className="p-3 bg-white/50 border-t border-slate-100">
+                        <div className="relative flex items-end gap-2 bg-white rounded-xl border border-slate-200 p-2 shadow-sm focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+                             <button 
+                                onClick={() => fileInputRef.current?.click()}
+                                className="p-2 text-slate-400 hover:text-primary transition rounded-lg hover:bg-slate-50"
+                                title="Upload"
+                             >
+                                <span className="material-symbols-outlined">attach_file</span>
+                             </button>
+                             <input type="file" ref={fileInputRef} className="hidden" accept="image/*,.txt,.pdf" onChange={handleFileUpload} />
+                             
+                             <textarea
+                                value={input}
+                                onChange={(e) => setInput(e.target.value)}
+                                onKeyDown={handleKeyDown}
+                                placeholder="Nhập yêu cầu mô phỏng..."
+                                className="flex-1 max-h-32 min-h-[44px] py-2.5 px-2 bg-transparent border-none focus:ring-0 resize-none text-sm text-slate-800 placeholder:text-slate-400"
+                                rows={1}
+                             />
+                             <button 
+                                onClick={handleSendMessage}
+                                disabled={isLoading || (!input.trim() && !file)}
+                                className="p-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                             >
+                                <span className="material-symbols-outlined">send</span>
+                             </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Preview Panel */}
+                {currentCode && (
+                    <div className="flex-1 flex flex-col h-full animate-fade-in gap-2 min-w-0">
+                         <div className="flex justify-between items-center px-2">
+                             <h3 className="font-bold text-primary flex items-center gap-2">
+                                <span className="material-symbols-outlined">preview</span>
+                                Màn Hình Mô Phỏng
+                             </h3>
+                             <button 
+                                onClick={() => {
+                                    const blob = new Blob([currentCode], {type: 'text/html'});
+                                    const url = URL.createObjectURL(blob);
+                                    window.open(url, '_blank');
+                                }}
+                                className="text-xs bg-white text-slate-600 px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 hover:text-primary transition-colors flex items-center gap-1 font-semibold shadow-sm"
+                             >
+                                <span className="material-symbols-outlined text-sm">open_in_new</span>
+                                Mở cửa sổ mới
+                             </button>
+                         </div>
+                         <div className="flex-1 relative">
+                            <PreviewFrame htmlCode={currentCode} />
+                         </div>
+                    </div>
                 )}
-                <div ref={chatEndRef} />
-              </div>
-
-              {/* Input Area */}
-              <div className="p-3 bg-white/50 border-t border-slate-100">
-                <div className="relative flex items-end gap-2 bg-white rounded-xl border border-slate-200 p-2 shadow-sm focus-within:ring-2 focus-within:ring-primary/20 transition-all">
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    className="p-2 text-slate-400 hover:text-primary transition rounded-lg hover:bg-slate-50"
-                    title="Upload"
-                  >
-                    <span className="material-symbols-outlined">attach_file</span>
-                  </button>
-                  <input type="file" ref={fileInputRef} className="hidden" accept="image/*,.txt,.pdf" onChange={handleFileUpload} />
-
-                  <textarea
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder={apiKey ? "Nhập yêu cầu mô phỏng..." : "Vui lòng nhập API Key để bắt đầu..."}
-                    disabled={!apiKey}
-                    className="flex-1 max-h-32 min-h-[44px] py-2.5 px-2 bg-transparent border-none focus:ring-0 resize-none text-sm text-slate-800 placeholder:text-slate-400 disabled:opacity-50 disabled:cursor-not-allowed"
-                    rows={1}
-                  />
-                  <button
-                    onClick={handleSendMessage}
-                    disabled={isLoading || (!input.trim() && !file) || !apiKey}
-                    className="p-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-                  >
-                    <span className="material-symbols-outlined">send</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Preview Panel */}
-            {currentCode && (
-              <div className="flex-1 flex flex-col h-full animate-fade-in gap-2 min-w-0">
-                <div className="flex justify-between items-center px-2">
-                  <h3 className="font-bold text-primary flex items-center gap-2">
-                    <span className="material-symbols-outlined">preview</span>
-                    Màn Hình Mô Phỏng
-                  </h3>
-                  <button
-                    onClick={() => {
-                      const blob = new Blob([currentCode], { type: 'text/html' });
-                      const url = URL.createObjectURL(blob);
-                      window.open(url, '_blank');
-                    }}
-                    className="text-xs bg-white text-slate-600 px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 hover:text-primary transition-colors flex items-center gap-1 font-semibold shadow-sm"
-                  >
-                    <span className="material-symbols-outlined text-sm">open_in_new</span>
-                    Mở cửa sổ mới
-                  </button>
-                </div>
-                <div className="flex-1 relative">
-                  <PreviewFrame htmlCode={currentCode} />
-                </div>
-              </div>
-            )}
-          </div>
+             </div>
         )}
       </main>
 
       {/* Library Drawer */}
-      <LibraryDrawer
-        isOpen={isLibraryOpen}
-        onClose={() => setIsLibraryOpen(false)}
+      <LibraryDrawer 
+        isOpen={isLibraryOpen} 
+        onClose={() => setIsLibraryOpen(false)} 
         onLoad={(code) => { setCurrentCode(code); setCurrentView('workspace'); }}
       />
     </div>
