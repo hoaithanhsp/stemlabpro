@@ -446,17 +446,36 @@ function App() {
                     <span className="material-symbols-outlined">preview</span>
                     Màn Hình Mô Phỏng
                   </h3>
-                  <button
-                    onClick={() => {
-                      const blob = new Blob([currentCode], { type: 'text/html' });
-                      const url = URL.createObjectURL(blob);
-                      window.open(url, '_blank');
-                    }}
-                    className="text-xs bg-white text-slate-600 px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 hover:text-primary transition-colors flex items-center gap-1 font-semibold shadow-sm"
-                  >
-                    <span className="material-symbols-outlined text-sm">open_in_new</span>
-                    Mở cửa sổ mới
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        const blob = new Blob([currentCode], { type: 'text/html' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'mo_phong_stemlab.html';
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                      }}
+                      className="text-xs bg-emerald-500 text-white px-3 py-1.5 rounded-lg hover:bg-emerald-600 transition-colors flex items-center gap-1 font-semibold shadow-sm"
+                    >
+                      <span className="material-symbols-outlined text-sm">download</span>
+                      Tải HTML
+                    </button>
+                    <button
+                      onClick={() => {
+                        const blob = new Blob([currentCode], { type: 'text/html' });
+                        const url = URL.createObjectURL(blob);
+                        window.open(url, '_blank');
+                      }}
+                      className="text-xs bg-white text-slate-600 px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 hover:text-primary transition-colors flex items-center gap-1 font-semibold shadow-sm"
+                    >
+                      <span className="material-symbols-outlined text-sm">open_in_new</span>
+                      Mở cửa sổ mới
+                    </button>
+                  </div>
                 </div>
                 <div className="flex-1 relative">
                   <PreviewFrame htmlCode={currentCode} />
