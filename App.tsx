@@ -451,16 +451,33 @@ function App() {
                       onClick={() => {
                         const name = prompt('Nhập tên mô phỏng để lưu:');
                         if (!name) return;
+
+                        const subjectChoice = prompt(
+                          'Chọn môn học (nhập số):\n1. Toán học\n2. Vật lý\n3. Tin học\n4. Khác'
+                        );
+                        if (!subjectChoice) return;
+
+                        let subject = 'other';
+                        switch (subjectChoice.trim()) {
+                          case '1': subject = 'math'; break;
+                          case '2': subject = 'physics'; break;
+                          case '3': subject = 'cs'; break;
+                          default: subject = 'other';
+                        }
+
                         try {
                           const library = JSON.parse(localStorage.getItem('stemlab_library') || '{}');
                           library[name] = {
                             title: name,
-                            subject: 'other',
+                            subject: subject,
                             html: currentCode,
                             timestamp: new Date().toISOString()
                           };
                           localStorage.setItem('stemlab_library', JSON.stringify(library));
-                          alert('✅ Đã lưu vào thư viện!');
+                          const subjectName = subject === 'math' ? 'Toán học' :
+                            subject === 'physics' ? 'Vật lý' :
+                              subject === 'cs' ? 'Tin học' : 'Khác';
+                          alert(`✅ Đã lưu "${name}" vào thư viện ${subjectName}!`);
                         } catch (e) {
                           alert('Lỗi: ' + (e as Error).message);
                         }
