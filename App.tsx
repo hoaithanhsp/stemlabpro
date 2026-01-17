@@ -6,6 +6,8 @@ import { initializeChat, sendMessageToGemini, resetChat, hasApiKey } from './ser
 import PreviewFrame from './components/PreviewFrame';
 import LibraryDrawer from './components/LibraryDrawer';
 import ApiKeyModal from './components/ApiKeyModal';
+import LoginModal from './components/LoginModal';
+import SettingsModal from './components/SettingsModal';
 import { ChatMessage } from './types';
 import logoImage from './logo.jpg';
 
@@ -13,7 +15,7 @@ import logoImage from './logo.jpg';
 // SUB-COMPONENTS
 // ==========================================
 
-const Sidebar = ({ onViewChange, currentView, onLibraryOpen, onHistoryOpen }: any) => (
+const Sidebar = ({ onViewChange, currentView, onLibraryOpen, onHistoryOpen, onSettingsOpen, profile }: any) => (
   <aside className="w-64 glass-panel border-r border-teal-100/20 flex flex-col h-full z-20 transition-all duration-300">
     {/* Logo Section */}
     <div className="p-4 flex justify-center border-b border-slate-100">
@@ -48,18 +50,18 @@ const Sidebar = ({ onViewChange, currentView, onLibraryOpen, onHistoryOpen }: an
         <p className="text-sm font-medium">Lịch sử</p>
       </div>
       <div className="pt-8 pb-2 px-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Tài khoản</div>
-      <div className="flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-teal-50 hover:text-primary rounded-xl transition-all cursor-pointer">
+      <div onClick={onSettingsOpen} className="flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-teal-50 hover:text-primary rounded-xl transition-all cursor-pointer">
         <span className="material-symbols-outlined">settings</span>
         <p className="text-sm font-medium">Cài đặt</p>
       </div>
     </nav>
     <div className="p-4 border-t border-slate-200/50">
-      <div className="flex items-center gap-3 p-2 bg-slate-50 rounded-xl border border-slate-100">
-        <img src={logoImage} alt="Logo" className="size-10 rounded-lg object-cover" />
+      <div onClick={onSettingsOpen} className="flex items-center gap-3 p-2 bg-slate-50 rounded-xl border border-slate-100 cursor-pointer hover:bg-slate-100 transition-colors">
+        <img src={profile?.avatar || '/teacher_avatar.jpg'} alt="Avatar" className="size-10 rounded-lg object-cover" />
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-bold text-slate-900 truncate">Trần Thị Kim Thoa</p>
-          <p className="text-[10px] text-slate-500">Trường TTHPT Hoàng Diệu</p>
-          <p className="text-[9px] text-slate-400 truncate">Số 1 Mạc Đĩnh Chi, P. Phú Lợi, TP. Cần Thơ</p>
+          <p className="text-xs font-bold text-slate-900 truncate">{profile?.name || 'Trần Thị Kim Thoa'}</p>
+          <p className="text-[10px] text-slate-500">{profile?.school || 'Trường TTHPT Hoàng Diệu'}</p>
+          <p className="text-[9px] text-slate-400 truncate">{profile?.address || 'Số 1 Mạc Đĩnh Chi, P. Phú Lợi, TP. Cần Thơ'}</p>
         </div>
         <span className="material-symbols-outlined text-slate-400 text-sm">unfold_more</span>
       </div>
@@ -175,6 +177,28 @@ function App() {
   const [currentView, setCurrentView] = useState<'home' | 'workspace'>('home');
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
 
+  // Login State
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    return localStorage.getItem('stemlab_logged_in') === 'true';
+  });
+
+  // Profile State
+  const [profile, setProfile] = useState(() => {
+    const saved = localStorage.getItem('stemlab_user_profile');
+    return saved ? JSON.parse(saved) : {
+      name: 'Trần Thị Kim Thoa',
+      avatar: '/teacher_avatar.jpg',
+      school: 'Trường TTHPT Hoàng Diệu',
+      address: 'Số 1 Mạc Đĩnh Chi, P. Phú Lợi, TP. Cần Thơ',
+      subject: 'Vật lý',
+      phone: '',
+      email: ''
+    };
+  });
+
+  // Settings Modal State
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
   // API Key State
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
   const [hasValidApiKey, setHasValidApiKey] = useState(false);
@@ -190,6 +214,26 @@ function App() {
 
   const chatEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Handle Login
+  const handleLogin = (user: { name: string; avatar: string }) => {
+    setIsLoggedIn(true);
+    localStorage.setItem('stemlab_logged_in', 'true');
+    setProfile(prev => ({ ...prev, name: user.name, avatar: user.avatar }));
+    localStorage.setItem('stemlab_user_profile', JSON.stringify({ ...profile, name: user.name, avatar: user.avatar }));
+  };
+
+  // Handle Logout
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    localStorage.removeItem('stemlab_logged_in');
+  };
+
+  // Handle Profile Save
+  const handleProfileSave = (newProfile: typeof profile) => {
+    setProfile(newProfile);
+    localStorage.setItem('stemlab_user_profile', JSON.stringify(newProfile));
+  };
 
   // Check API key on mount
   useEffect(() => {
@@ -287,260 +331,279 @@ function App() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden gradient-bg font-display">
-      <Sidebar
-        onViewChange={setCurrentView}
-        currentView={currentView}
-        onLibraryOpen={() => setIsLibraryOpen(true)}
-        onHistoryOpen={() => setIsLibraryOpen(true)}
-      />
+    <>
+      {/* Login Screen */}
+      {!isLoggedIn && <LoginModal onLogin={handleLogin} />}
 
-      <main className="flex-1 flex flex-col overflow-hidden relative">
-        {/* Header */}
-        <header className="h-16 glass-panel border-b border-teal-100/20 px-8 flex items-center justify-between z-10 shrink-0">
-          <div className="flex items-center gap-4 flex-1">
-            <div className="relative max-w-md w-full group">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">search</span>
-              <input
-                className="w-full bg-slate-50/50 border-transparent rounded-full py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/50 focus:bg-white transition-all placeholder:text-slate-400"
-                placeholder="Tìm kiếm mô phỏng, hoặc nhập lệnh nhanh..."
-                type="text"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    setInput(e.currentTarget.value);
-                    e.currentTarget.value = '';
-                    switchToWorkspace();
-                    // We can trigger send message here if we pass state carefully, 
-                    // but for now let's just focus the main input in workspace or use effect.
-                    // Simplifying:
-                  }
-                }}
-              />
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setShowApiKeyModal(true)}
-              className={`h-9 px-4 flex items-center gap-2 rounded-full text-sm font-bold transition-all ${hasValidApiKey
-                ? 'bg-green-50 text-green-600 hover:bg-green-100'
-                : 'bg-red-50 text-red-500 hover:bg-red-100'
-                }`}
-              title="Cài đặt API Key"
-            >
-              <span className="material-symbols-outlined text-lg">key</span>
-              <span>{hasValidApiKey ? 'API Key' : 'Nhập Key'}</span>
-            </button>
-            <button className="size-10 flex items-center justify-center rounded-full hover:bg-teal-50 text-slate-600 relative transition-colors">
-              <span className="material-symbols-outlined">notifications</span>
-              <span className="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-white"></span>
-            </button>
-            <button
-              onClick={() => { resetChat(); setChatHistory([{ role: 'model', text: 'Đã reset phiên làm việc.' }]); setCurrentCode(null); }}
-              className="h-9 px-4 flex items-center gap-2 bg-primary/10 text-primary hover:bg-primary/20 rounded-full text-sm font-bold transition-all"
-            >
-              <span className="material-symbols-outlined text-lg">refresh</span>
-              <span>Reset</span>
-            </button>
-            <button className="h-10 px-4 flex items-center gap-2 bg-primary text-white rounded-full text-sm font-bold shadow-md hover:bg-primary-dark transition-all">
-              <span className="material-symbols-outlined text-lg">rocket_launch</span>
-              <span>Nâng cấp</span>
-            </button>
-          </div>
-        </header>
+      {/* Main App - only show when logged in */}
+      {isLoggedIn && (
+        <div className="flex h-screen overflow-hidden gradient-bg font-display">
+          <Sidebar
+            onViewChange={setCurrentView}
+            currentView={currentView}
+            onLibraryOpen={() => setIsLibraryOpen(true)}
+            onHistoryOpen={() => setIsLibraryOpen(true)}
+            onSettingsOpen={() => setIsSettingsOpen(true)}
+            profile={profile}
+          />
 
-        {/* Content Area */}
-        {currentView === 'home' ? (
-          <Dashboard onStartSim={(prompt: string) => { setInput(prompt); setCurrentView('workspace'); }} onFileUpload={handleFileUpload} />
-        ) : (
-          <div className="flex-1 flex overflow-hidden p-4 gap-4 bg-slate-50/50">
-            {/* Chat Panel */}
-            <div className={`flex flex-col glass-panel rounded-2xl shadow-lg border border-white/40 transition-all duration-300 ${currentCode ? 'w-1/3 min-w-[380px]' : 'w-full max-w-4xl mx-auto'}`}>
-              {/* Chat Header */}
-              <div className="p-4 border-b border-slate-100 flex justify-between items-center">
-                <div className="flex items-center gap-2 text-primary font-bold">
-                  <span className="material-symbols-outlined">smart_toy</span>
-                  <span>Trợ lý Lab</span>
+          <main className="flex-1 flex flex-col overflow-hidden relative">
+            {/* Header */}
+            <header className="h-16 glass-panel border-b border-teal-100/20 px-8 flex items-center justify-between z-10 shrink-0">
+              <div className="flex items-center gap-4 flex-1">
+                <div className="relative max-w-md w-full group">
+                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">search</span>
+                  <input
+                    className="w-full bg-slate-50/50 border-transparent rounded-full py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/50 focus:bg-white transition-all placeholder:text-slate-400"
+                    placeholder="Tìm kiếm mô phỏng, hoặc nhập lệnh nhanh..."
+                    type="text"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        setInput(e.currentTarget.value);
+                        e.currentTarget.value = '';
+                        switchToWorkspace();
+                        // We can trigger send message here if we pass state carefully, 
+                        // but for now let's just focus the main input in workspace or use effect.
+                        // Simplifying:
+                      }
+                    }}
+                  />
                 </div>
-                {file && (
-                  <span className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-lg flex items-center gap-1">
-                    <span className="material-symbols-outlined text-sm">attach_file</span>
-                    {file.name}
-                    <button onClick={() => setFile(null)} className="hover:text-red-500 ml-1">×</button>
-                  </span>
-                )}
               </div>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setShowApiKeyModal(true)}
+                  className={`h-9 px-4 flex items-center gap-2 rounded-full text-sm font-bold transition-all ${hasValidApiKey
+                    ? 'bg-green-50 text-green-600 hover:bg-green-100'
+                    : 'bg-red-50 text-red-500 hover:bg-red-100'
+                    }`}
+                  title="Cài đặt API Key"
+                >
+                  <span className="material-symbols-outlined text-lg">key</span>
+                  <span>{hasValidApiKey ? 'API Key' : 'Nhập Key'}</span>
+                </button>
+                <button className="size-10 flex items-center justify-center rounded-full hover:bg-teal-50 text-slate-600 relative transition-colors">
+                  <span className="material-symbols-outlined">notifications</span>
+                  <span className="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-white"></span>
+                </button>
+                <button
+                  onClick={() => { resetChat(); setChatHistory([{ role: 'model', text: 'Đã reset phiên làm việc.' }]); setCurrentCode(null); }}
+                  className="h-9 px-4 flex items-center gap-2 bg-primary/10 text-primary hover:bg-primary/20 rounded-full text-sm font-bold transition-all"
+                >
+                  <span className="material-symbols-outlined text-lg">refresh</span>
+                  <span>Reset</span>
+                </button>
+                <button className="h-10 px-4 flex items-center gap-2 bg-primary text-white rounded-full text-sm font-bold shadow-md hover:bg-primary-dark transition-all">
+                  <span className="material-symbols-outlined text-lg">rocket_launch</span>
+                  <span>Nâng cấp</span>
+                </button>
+              </div>
+            </header>
 
-              {/* Chat Messages */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
-                {chatHistory.map((msg, idx) => (
-                  <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div
-                      className={`max-w-[85%] rounded-2xl px-5 py-3 shadow-sm text-sm leading-relaxed ${msg.role === 'user'
-                        ? 'bg-primary text-white rounded-br-sm'
-                        : 'bg-white border border-slate-100 text-slate-800 rounded-bl-sm'
-                        } ${msg.isError ? 'bg-red-50 border-red-200 text-red-600' : ''}`}
-                    >
-                      <ReactMarkdown
-                        remarkPlugins={[remarkMath]}
-                        rehypePlugins={[rehypeKatex]}
-                        className="markdown-content"
-                        components={{
-                          a: ({ node, ...props }) => <a className="underline hover:opacity-80 font-bold" target="_blank" rel="noreferrer" {...props} />
-                        }}
+            {/* Content Area */}
+            {currentView === 'home' ? (
+              <Dashboard onStartSim={(prompt: string) => { setInput(prompt); setCurrentView('workspace'); }} onFileUpload={handleFileUpload} />
+            ) : (
+              <div className="flex-1 flex overflow-hidden p-4 gap-4 bg-slate-50/50">
+                {/* Chat Panel */}
+                <div className={`flex flex-col glass-panel rounded-2xl shadow-lg border border-white/40 transition-all duration-300 ${currentCode ? 'w-1/3 min-w-[380px]' : 'w-full max-w-4xl mx-auto'}`}>
+                  {/* Chat Header */}
+                  <div className="p-4 border-b border-slate-100 flex justify-between items-center">
+                    <div className="flex items-center gap-2 text-primary font-bold">
+                      <span className="material-symbols-outlined">smart_toy</span>
+                      <span>Trợ lý Lab</span>
+                    </div>
+                    {file && (
+                      <span className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-lg flex items-center gap-1">
+                        <span className="material-symbols-outlined text-sm">attach_file</span>
+                        {file.name}
+                        <button onClick={() => setFile(null)} className="hover:text-red-500 ml-1">×</button>
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Chat Messages */}
+                  <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+                    {chatHistory.map((msg, idx) => (
+                      <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                        <div
+                          className={`max-w-[85%] rounded-2xl px-5 py-3 shadow-sm text-sm leading-relaxed ${msg.role === 'user'
+                            ? 'bg-primary text-white rounded-br-sm'
+                            : 'bg-white border border-slate-100 text-slate-800 rounded-bl-sm'
+                            } ${msg.isError ? 'bg-red-50 border-red-200 text-red-600' : ''}`}
+                        >
+                          <ReactMarkdown
+                            remarkPlugins={[remarkMath]}
+                            rehypePlugins={[rehypeKatex]}
+                            className="markdown-content"
+                            components={{
+                              a: ({ node, ...props }) => <a className="underline hover:opacity-80 font-bold" target="_blank" rel="noreferrer" {...props} />
+                            }}
+                          >
+                            {msg.text}
+                          </ReactMarkdown>
+                        </div>
+                      </div>
+                    ))}
+                    {isLoading && (
+                      <div className="flex justify-start">
+                        <div className="bg-white rounded-2xl rounded-bl-sm px-4 py-3 border border-slate-100 shadow-sm">
+                          <div className="flex space-x-1.5 items-center h-5">
+                            <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce"></div>
+                            <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce delay-75"></div>
+                            <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce delay-150"></div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    <div ref={chatEndRef} />
+                  </div>
+
+                  {/* Input Area */}
+                  <div className="p-3 bg-white/50 border-t border-slate-100">
+                    <div className="relative flex items-end gap-2 bg-white rounded-xl border border-slate-200 p-2 shadow-sm focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+                      <button
+                        onClick={() => fileInputRef.current?.click()}
+                        className="p-2 text-slate-400 hover:text-primary transition rounded-lg hover:bg-slate-50"
+                        title="Upload"
                       >
-                        {msg.text}
-                      </ReactMarkdown>
+                        <span className="material-symbols-outlined">attach_file</span>
+                      </button>
+                      <input type="file" ref={fileInputRef} className="hidden" accept="image/*,.txt,.pdf" onChange={handleFileUpload} />
+
+                      <textarea
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        placeholder="Nhập yêu cầu mô phỏng..."
+                        className="flex-1 max-h-32 min-h-[44px] py-2.5 px-2 bg-transparent border-none focus:ring-0 resize-none text-sm text-slate-800 placeholder:text-slate-400"
+                        rows={1}
+                      />
+                      <button
+                        onClick={handleSendMessage}
+                        disabled={isLoading || (!input.trim() && !file)}
+                        className="p-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                      >
+                        <span className="material-symbols-outlined">send</span>
+                      </button>
                     </div>
                   </div>
-                ))}
-                {isLoading && (
-                  <div className="flex justify-start">
-                    <div className="bg-white rounded-2xl rounded-bl-sm px-4 py-3 border border-slate-100 shadow-sm">
-                      <div className="flex space-x-1.5 items-center h-5">
-                        <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce"></div>
-                        <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce delay-75"></div>
-                        <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce delay-150"></div>
+                </div>
+
+                {/* Preview Panel */}
+                {currentCode && (
+                  <div className="flex-1 flex flex-col h-full animate-fade-in gap-2 min-w-0">
+                    <div className="flex justify-between items-center px-2">
+                      <h3 className="font-bold text-primary flex items-center gap-2">
+                        <span className="material-symbols-outlined">preview</span>
+                        Màn Hình Mô Phỏng
+                      </h3>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => {
+                            const name = prompt('Nhập tên mô phỏng để lưu:');
+                            if (!name) return;
+
+                            const subjectChoice = prompt(
+                              'Chọn môn học (nhập số):\n1. Toán học\n2. Vật lý\n3. Tin học\n4. Khác'
+                            );
+                            if (!subjectChoice) return;
+
+                            let subject = 'other';
+                            switch (subjectChoice.trim()) {
+                              case '1': subject = 'math'; break;
+                              case '2': subject = 'physics'; break;
+                              case '3': subject = 'cs'; break;
+                              default: subject = 'other';
+                            }
+
+                            try {
+                              const library = JSON.parse(localStorage.getItem('stemlab_library') || '{}');
+                              library[name] = {
+                                title: name,
+                                subject: subject,
+                                html: currentCode,
+                                timestamp: new Date().toISOString()
+                              };
+                              localStorage.setItem('stemlab_library', JSON.stringify(library));
+                              const subjectName = subject === 'math' ? 'Toán học' :
+                                subject === 'physics' ? 'Vật lý' :
+                                  subject === 'cs' ? 'Tin học' : 'Khác';
+                              alert(`✅ Đã lưu "${name}" vào thư viện ${subjectName}!`);
+                            } catch (e) {
+                              alert('Lỗi: ' + (e as Error).message);
+                            }
+                          }}
+                          className="text-xs bg-primary text-white px-3 py-1.5 rounded-lg hover:bg-primary-dark transition-colors flex items-center gap-1 font-semibold shadow-sm"
+                        >
+                          <span className="material-symbols-outlined text-sm">bookmark_add</span>
+                          Lưu Thư Viện
+                        </button>
+                        <button
+                          onClick={() => {
+                            const blob = new Blob([currentCode], { type: 'text/html' });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = 'mo_phong_stemlab.html';
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                            URL.revokeObjectURL(url);
+                          }}
+                          className="text-xs bg-emerald-500 text-white px-3 py-1.5 rounded-lg hover:bg-emerald-600 transition-colors flex items-center gap-1 font-semibold shadow-sm"
+                        >
+                          <span className="material-symbols-outlined text-sm">download</span>
+                          Tải HTML
+                        </button>
+                        <button
+                          onClick={() => {
+                            const blob = new Blob([currentCode], { type: 'text/html' });
+                            const url = URL.createObjectURL(blob);
+                            window.open(url, '_blank');
+                          }}
+                          className="text-xs bg-white text-slate-600 px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 hover:text-primary transition-colors flex items-center gap-1 font-semibold shadow-sm"
+                        >
+                          <span className="material-symbols-outlined text-sm">open_in_new</span>
+                          Mở cửa sổ mới
+                        </button>
                       </div>
                     </div>
+                    <div className="flex-1 relative">
+                      <PreviewFrame htmlCode={currentCode} />
+                    </div>
                   </div>
                 )}
-                <div ref={chatEndRef} />
-              </div>
-
-              {/* Input Area */}
-              <div className="p-3 bg-white/50 border-t border-slate-100">
-                <div className="relative flex items-end gap-2 bg-white rounded-xl border border-slate-200 p-2 shadow-sm focus-within:ring-2 focus-within:ring-primary/20 transition-all">
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    className="p-2 text-slate-400 hover:text-primary transition rounded-lg hover:bg-slate-50"
-                    title="Upload"
-                  >
-                    <span className="material-symbols-outlined">attach_file</span>
-                  </button>
-                  <input type="file" ref={fileInputRef} className="hidden" accept="image/*,.txt,.pdf" onChange={handleFileUpload} />
-
-                  <textarea
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder="Nhập yêu cầu mô phỏng..."
-                    className="flex-1 max-h-32 min-h-[44px] py-2.5 px-2 bg-transparent border-none focus:ring-0 resize-none text-sm text-slate-800 placeholder:text-slate-400"
-                    rows={1}
-                  />
-                  <button
-                    onClick={handleSendMessage}
-                    disabled={isLoading || (!input.trim() && !file)}
-                    className="p-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-                  >
-                    <span className="material-symbols-outlined">send</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Preview Panel */}
-            {currentCode && (
-              <div className="flex-1 flex flex-col h-full animate-fade-in gap-2 min-w-0">
-                <div className="flex justify-between items-center px-2">
-                  <h3 className="font-bold text-primary flex items-center gap-2">
-                    <span className="material-symbols-outlined">preview</span>
-                    Màn Hình Mô Phỏng
-                  </h3>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => {
-                        const name = prompt('Nhập tên mô phỏng để lưu:');
-                        if (!name) return;
-
-                        const subjectChoice = prompt(
-                          'Chọn môn học (nhập số):\n1. Toán học\n2. Vật lý\n3. Tin học\n4. Khác'
-                        );
-                        if (!subjectChoice) return;
-
-                        let subject = 'other';
-                        switch (subjectChoice.trim()) {
-                          case '1': subject = 'math'; break;
-                          case '2': subject = 'physics'; break;
-                          case '3': subject = 'cs'; break;
-                          default: subject = 'other';
-                        }
-
-                        try {
-                          const library = JSON.parse(localStorage.getItem('stemlab_library') || '{}');
-                          library[name] = {
-                            title: name,
-                            subject: subject,
-                            html: currentCode,
-                            timestamp: new Date().toISOString()
-                          };
-                          localStorage.setItem('stemlab_library', JSON.stringify(library));
-                          const subjectName = subject === 'math' ? 'Toán học' :
-                            subject === 'physics' ? 'Vật lý' :
-                              subject === 'cs' ? 'Tin học' : 'Khác';
-                          alert(`✅ Đã lưu "${name}" vào thư viện ${subjectName}!`);
-                        } catch (e) {
-                          alert('Lỗi: ' + (e as Error).message);
-                        }
-                      }}
-                      className="text-xs bg-primary text-white px-3 py-1.5 rounded-lg hover:bg-primary-dark transition-colors flex items-center gap-1 font-semibold shadow-sm"
-                    >
-                      <span className="material-symbols-outlined text-sm">bookmark_add</span>
-                      Lưu Thư Viện
-                    </button>
-                    <button
-                      onClick={() => {
-                        const blob = new Blob([currentCode], { type: 'text/html' });
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = 'mo_phong_stemlab.html';
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
-                        URL.revokeObjectURL(url);
-                      }}
-                      className="text-xs bg-emerald-500 text-white px-3 py-1.5 rounded-lg hover:bg-emerald-600 transition-colors flex items-center gap-1 font-semibold shadow-sm"
-                    >
-                      <span className="material-symbols-outlined text-sm">download</span>
-                      Tải HTML
-                    </button>
-                    <button
-                      onClick={() => {
-                        const blob = new Blob([currentCode], { type: 'text/html' });
-                        const url = URL.createObjectURL(blob);
-                        window.open(url, '_blank');
-                      }}
-                      className="text-xs bg-white text-slate-600 px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 hover:text-primary transition-colors flex items-center gap-1 font-semibold shadow-sm"
-                    >
-                      <span className="material-symbols-outlined text-sm">open_in_new</span>
-                      Mở cửa sổ mới
-                    </button>
-                  </div>
-                </div>
-                <div className="flex-1 relative">
-                  <PreviewFrame htmlCode={currentCode} />
-                </div>
               </div>
             )}
-          </div>
-        )}
-      </main>
+          </main>
 
-      {/* API Key Modal */}
-      <ApiKeyModal
-        isOpen={showApiKeyModal}
-        onClose={() => setShowApiKeyModal(false)}
-        onSave={() => setHasValidApiKey(true)}
-        canClose={hasValidApiKey}
-      />
+          {/* API Key Modal */}
+          <ApiKeyModal
+            isOpen={showApiKeyModal}
+            onClose={() => setShowApiKeyModal(false)}
+            onSave={() => setHasValidApiKey(true)}
+            canClose={hasValidApiKey}
+          />
 
-      {/* Library Drawer */}
-      <LibraryDrawer
-        isOpen={isLibraryOpen}
-        onClose={() => setIsLibraryOpen(false)}
-        onLoad={(code) => { setCurrentCode(code); setCurrentView('workspace'); }}
-      />
-    </div>
+          {/* Library Drawer */}
+          <LibraryDrawer
+            isOpen={isLibraryOpen}
+            onClose={() => setIsLibraryOpen(false)}
+            onLoad={(code) => { setCurrentCode(code); setCurrentView('workspace'); }}
+          />
+
+          {/* Settings Modal */}
+          <SettingsModal
+            isOpen={isSettingsOpen}
+            onClose={() => setIsSettingsOpen(false)}
+            profile={profile}
+            onSave={handleProfileSave}
+            onLogout={handleLogout}
+          />
+        </div>
+      )}
+    </>
   );
 }
 

@@ -243,15 +243,28 @@ Template bắt buộc:
     </div>
 
     <script>
+       // --- GLOBAL VARIABLE INITIALIZATION ---
+       // Đảm bảo các biến luôn tồn tại để tránh lỗi ReferenceError
+       window.isReverseMode = window.isReverseMode || false;
+       window.targetParams = window.targetParams || null;
+       window.hintsUsed = window.hintsUsed || 0;
+       window.reverseTimerInterval = window.reverseTimerInterval || null;
+       window.reverseTimeLeft = window.reverseTimeLeft || 60;
+       window.reverseScore = window.reverseScore || 0;
+       window.challengeTimerInterval = window.challengeTimerInterval || null;
+       window.challengeTimeLeft = window.challengeTimeLeft || 0;
+       window.currentChallenge = window.currentChallenge || null;
+       window.challengeDifficulty = window.challengeDifficulty || 'easy';
+       
        const currentSubject = 'math'; // 'math' | 'physics' | 'cs' | 'other'
        
        // --- REVERSE ENGINEERING LOGIC (Học ngược) - 60 giây ---
-       var isReverseMode = false;
-       var targetParams = null;
-       var hintsUsed = 0;
-       var reverseTimerInterval = null;
-       var reverseTimeLeft = 60;
-       var reverseScore = 0;
+       var isReverseMode = window.isReverseMode;
+       var targetParams = window.targetParams;
+       var hintsUsed = window.hintsUsed;
+       var reverseTimerInterval = window.reverseTimerInterval;
+       var reverseTimeLeft = window.reverseTimeLeft;
+       var reverseScore = window.reverseScore;
        
        function toggleReverseMode() {
            const panel = document.getElementById('reverse-panel');
@@ -436,10 +449,10 @@ Template bắt buộc:
        }
 
        // --- CHALLENGE MODE LOGIC (Thử thách - Inline Panel) ---
-       var challengeTimerInterval = null;
-       var challengeTimeLeft = 0;
-       var currentChallenge = null;
-       var challengeDifficulty = 'easy';
+       var challengeTimerInterval = window.challengeTimerInterval;
+       var challengeTimeLeft = window.challengeTimeLeft;
+       var currentChallenge = window.currentChallenge;
+       var challengeDifficulty = window.challengeDifficulty;
        
        // Show challenge panel (thay vì modal)
        function showChallengeMenu() {
