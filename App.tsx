@@ -7,16 +7,17 @@ import PreviewFrame from './components/PreviewFrame';
 import LibraryDrawer from './components/LibraryDrawer';
 import ApiKeyModal from './components/ApiKeyModal';
 import { ChatMessage } from './types';
+import logoImage from './logo.jpg';
 
 // ==========================================
 // SUB-COMPONENTS
 // ==========================================
 
-const Sidebar = ({ onViewChange, currentView, onLibraryOpen }: any) => (
+const Sidebar = ({ onViewChange, currentView, onLibraryOpen, onHistoryOpen }: any) => (
   <aside className="w-64 glass-panel border-r border-teal-100/20 flex flex-col h-full z-20 transition-all duration-300">
     {/* Logo Section */}
     <div className="p-4 flex justify-center border-b border-slate-100">
-      <img src="/logo.jpg" alt="Logo Trần Thị Kim Thoa" className="w-32 h-32 rounded-xl object-cover shadow-lg" />
+      <img src={logoImage} alt="Logo Trần Thị Kim Thoa" className="w-32 h-32 rounded-xl object-cover shadow-lg" />
     </div>
 
     {/* App Branding */}
@@ -42,7 +43,7 @@ const Sidebar = ({ onViewChange, currentView, onLibraryOpen }: any) => (
         <span className="material-symbols-outlined">add_box</span>
         <p className="text-sm">Mô phỏng mới</p>
       </div>
-      <div className="flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-teal-50 hover:text-primary rounded-xl transition-all cursor-pointer">
+      <div onClick={onHistoryOpen} className="flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-teal-50 hover:text-primary rounded-xl transition-all cursor-pointer">
         <span className="material-symbols-outlined">history</span>
         <p className="text-sm font-medium">Lịch sử</p>
       </div>
@@ -54,7 +55,7 @@ const Sidebar = ({ onViewChange, currentView, onLibraryOpen }: any) => (
     </nav>
     <div className="p-4 border-t border-slate-200/50">
       <div className="flex items-center gap-3 p-2 bg-slate-50 rounded-xl border border-slate-100">
-        <img src="/logo.jpg" alt="Logo" className="size-10 rounded-lg object-cover" />
+        <img src={logoImage} alt="Logo" className="size-10 rounded-lg object-cover" />
         <div className="flex-1 min-w-0">
           <p className="text-xs font-bold text-slate-900 truncate">Trần Thị Kim Thoa</p>
           <p className="text-[10px] text-slate-500">Trường TTHPT Hoàng Diệu</p>
@@ -291,6 +292,7 @@ function App() {
         onViewChange={setCurrentView}
         currentView={currentView}
         onLibraryOpen={() => setIsLibraryOpen(true)}
+        onHistoryOpen={() => setIsLibraryOpen(true)}
       />
 
       <main className="flex-1 flex flex-col overflow-hidden relative">
