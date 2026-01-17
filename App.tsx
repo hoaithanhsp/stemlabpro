@@ -51,7 +51,7 @@ const Sidebar = ({ onViewChange, currentView, onLibraryOpen }: any) => (
         <img src="/logo.jpg" alt="Logo" className="size-10 rounded-lg object-cover" />
         <div className="flex-1 min-w-0">
           <p className="text-xs font-bold text-slate-900 truncate">Trần Thị Kim Thoa</p>
-          <p className="text-[10px] text-slate-500">Trường TTHPT Hoàng Diệu</p>
+          <p className="text-[10px] text-slate-500">Trường THPT Hoàng Diệu</p>
           <p className="text-[9px] text-slate-400 truncate">Số 1 Mạc Đĩnh Chi, P. Phú Lợi, TP. Cần Thơ</p>
         </div>
         <span className="material-symbols-outlined text-slate-400 text-sm">unfold_more</span>
