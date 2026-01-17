@@ -107,8 +107,8 @@ const LibraryDrawer: React.FC<LibraryDrawerProps> = ({ isOpen, onClose, onLoad }
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`flex-1 py-3 px-2 text-xs font-bold uppercase tracking-wider transition-all flex flex-col items-center gap-1 ${activeTab === tab.id
-                  ? 'bg-white text-primary border-b-2 border-primary'
-                  : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'
+                ? 'bg-white text-primary border-b-2 border-primary'
+                : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'
                 }`}
             >
               <span className="text-lg">{tab.icon}</span>
@@ -139,7 +139,7 @@ const LibraryDrawer: React.FC<LibraryDrawerProps> = ({ isOpen, onClose, onLoad }
                       style={{ width: '200%', height: '200%' }}
                       sandbox="allow-scripts"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-4 gap-2">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end justify-center pb-4 gap-2">
                       <button
                         onClick={(e) => handleOpenInNewTab(item, e)}
                         className="bg-white text-primary px-4 py-2 rounded-lg text-sm font-bold shadow-lg hover:bg-primary hover:text-white transition-all flex items-center gap-1"
@@ -149,16 +149,16 @@ const LibraryDrawer: React.FC<LibraryDrawerProps> = ({ isOpen, onClose, onLoad }
                       </button>
                       <button
                         onClick={(e) => handleDownload(item, e)}
-                        className="bg-white/90 text-slate-700 px-4 py-2 rounded-lg text-sm font-bold shadow-lg hover:bg-primary hover:text-white transition-all flex items-center gap-1"
+                        className="bg-emerald-500 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-lg hover:bg-emerald-600 transition-all flex items-center gap-1"
                       >
                         <span className="material-symbols-outlined text-lg">download</span>
-                        Tải
+                        Tải HTML
                       </button>
                     </div>
                     {/* Subject Badge */}
                     <div className={`absolute top-2 left-2 px-2 py-1 rounded text-[10px] font-black uppercase ${item.subject === 'math' ? 'bg-teal-500 text-white' :
-                        item.subject === 'physics' ? 'bg-blue-500 text-white' :
-                          item.subject === 'cs' ? 'bg-emerald-500 text-white' : 'bg-slate-400 text-white'
+                      item.subject === 'physics' ? 'bg-blue-500 text-white' :
+                        item.subject === 'cs' ? 'bg-emerald-500 text-white' : 'bg-slate-400 text-white'
                       }`}>
                       {item.subject === 'math' ? 'Toán' :
                         item.subject === 'physics' ? 'Vật Lý' :
