@@ -115,14 +115,28 @@ Template bắt buộc:
             <!-- Reverse Mode Panel -->
             <div id="reverse-panel">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                    <h3 style="margin:0; font-size:1.1rem;">🎯 Mục Tiêu</h3>
-                    <button onclick="toggleReverseMode()" style="padding:4px 8px; font-size:0.8rem; background:transparent; color:#64748b;">✕</button>
+                    <h3 style="margin:0; font-size:1.1rem;">🎯 Học Ngược</h3>
+                    <button onclick="quitReverseMode()" style="padding:4px 8px; font-size:0.8rem; background:transparent; color:#64748b;">✕</button>
                 </div>
-                <p style="font-size:0.8rem; color:#64748b; margin-bottom:5px;">Điều chỉnh thông số để khớp với hình bên dưới:</p>
+                <p style="font-size:0.8rem; color:#64748b; margin-bottom:5px;">Điều chỉnh thông số để khớp với hình mục tiêu:</p>
                 <canvas id="targetCanvas"></canvas>
-                <div class="similarity-box">Độ khớp: <span id="similarity-score">0%</span></div>
-                <button onclick="showHint()" class="hint-btn">💡 Gợi ý (<span id="hints-left">3</span>)</button>
-                <button onclick="startReverseChallenge()">🔄 Tạo màn mới</button>
+                
+                <!-- Timer Display -->
+                <div id="reverse-timer-container" style="text-align:center; margin:10px 0;">
+                    <div style="font-size:2rem; font-weight:800; color:#0d9488;" id="reverse-timer">60</div>
+                    <div style="font-size:0.7rem; color:#64748b;">giây còn lại</div>
+                </div>
+                
+                <!-- Score Display -->
+                <div class="similarity-box">
+                    <div>Độ khớp hiện tại</div>
+                    <div style="font-size:2rem;" id="similarity-score">0%</div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <button onclick="submitReverseAnswer()" style="width:100%; margin-bottom:0.5rem; background:#10b981;">✅ Nộp bài</button>
+                <button onclick="showHint()" class="hint-btn">💡 Gợi ý (<span id="hints-left">3</span>) - Trừ 10 điểm</button>
+                <button onclick="startReverseChallenge()" class="secondary" style="width:100%;">🔄 Tạo màn mới</button>
             </div>
         </div>
         
@@ -175,10 +189,13 @@ Template bắt buộc:
     <script>
        const currentSubject = 'math'; // 'math' | 'physics' | 'cs' | 'other'
        
-       // --- REVERSE ENGINEERING LOGIC (Học ngược) ---
+       // --- REVERSE ENGINEERING LOGIC (Học ngược) - 60 giây ---
        let isReverseMode = false;
        let targetParams = null;
        let hintsUsed = 0;
+       let reverseTimerInterval = null;
+       let reverseTimeLeft = 60;
+       let reverseScore = 0;
        
        function toggleReverseMode() {
            const panel = document.getElementById('reverse-panel');
@@ -187,15 +204,54 @@ Template bắt buộc:
            if (isReverseMode && !targetParams) startReverseChallenge();
        }
        
+       function quitReverseMode() {
+           if (reverseTimerInterval) clearInterval(reverseTimerInterval);
+           isReverseMode = false;
+           targetParams = null;
+           document.getElementById('reverse-panel').style.display = 'none';
+       }
+       
        function startReverseChallenge() {
+           // Reset state
            hintsUsed = 0;
+           reverseTimeLeft = 60;
+           reverseScore = 0;
            document.getElementById('hints-left').innerText = '3';
+           document.getElementById('reverse-timer').innerText = '60';
+           document.getElementById('reverse-timer').style.color = '#0d9488';
+           
+           // Clear existing timer
+           if (reverseTimerInterval) clearInterval(reverseTimerInterval);
+           
            if (typeof generateRandomParams === 'function') {
                targetParams = generateRandomParams();
                drawTarget(targetParams);
                if (typeof resetSimulation === 'function') resetSimulation();
                calculateSimilarity();
-           } else { alert("Chế độ này chưa được hỗ trợ."); }
+               
+               // Start 60 second timer
+               reverseTimerInterval = setInterval(() => {
+                   reverseTimeLeft--;
+                   document.getElementById('reverse-timer').innerText = reverseTimeLeft;
+                   
+                   // Update timer color based on time left
+                   if (reverseTimeLeft <= 10) {
+                       document.getElementById('reverse-timer').style.color = '#dc2626';
+                   } else if (reverseTimeLeft <= 30) {
+                       document.getElementById('reverse-timer').style.color = '#f59e0b';
+                   }
+                   
+                   // Auto-calculate similarity
+                   calculateSimilarity();
+                   
+                   if (reverseTimeLeft <= 0) {
+                       endReverseGame(false);
+                   }
+               }, 1000);
+           } else { 
+               alert("Chế độ Học Ngược chưa được hỗ trợ cho mô phỏng này."); 
+               quitReverseMode();
+           }
        }
        
        function drawTarget(params) {
@@ -205,30 +261,124 @@ Template bắt buộc:
            if (typeof drawSimulationOnContext === 'function') {
                drawSimulationOnContext(ctx, params);
            } else {
-               ctx.fillStyle = '#f0f0f0'; ctx.fillRect(0,0,cvs.width,cvs.height);
-               ctx.fillText("Preview chưa được cài đặt", 10, 50);
+               ctx.fillStyle = '#f8fafc'; ctx.fillRect(0,0,cvs.width,cvs.height);
+               ctx.fillStyle = '#64748b';
+               ctx.font = '12px sans-serif';
+               ctx.fillText("Hình mục tiêu sẽ hiển thị ở đây", 10, 80);
            }
        }
        
        function showHint() {
+           if (!isReverseMode || !targetParams) return;
            if (hintsUsed >= 3) { alert("Đã hết gợi ý!"); return; }
+           
            if (typeof getHintText === 'function') {
-               alert(getHintText(hintsUsed, targetParams));
+               alert("💡 Gợi ý: " + getHintText(hintsUsed, targetParams));
                hintsUsed++;
                document.getElementById('hints-left').innerText = 3 - hintsUsed;
-               calculateSimilarity(); 
+           } else {
+               // Generic hint based on target params
+               const keys = Object.keys(targetParams);
+               if (keys.length > hintsUsed) {
+                   const key = keys[hintsUsed];
+                   alert("💡 Gợi ý: Thông số " + key + " nên khoảng " + targetParams[key]);
+                   hintsUsed++;
+                   document.getElementById('hints-left').innerText = 3 - hintsUsed;
+               }
            }
        }
        
        function calculateSimilarity() {
-           if (!isReverseMode || !targetParams) return;
+           if (!isReverseMode || !targetParams) return 0;
            let score = 0;
            if (typeof calculateMatchPercentage === 'function') {
                score = calculateMatchPercentage(targetParams);
            }
-           document.getElementById('similarity-score').innerText = Math.round(score) + '%';
-           document.getElementById('similarity-score').style.color = score >= 95 ? '#10b981' : '#0d9488';
+           const roundedScore = Math.round(score);
+           document.getElementById('similarity-score').innerText = roundedScore + '%';
+           
+           // Color based on score
+           if (roundedScore >= 90) {
+               document.getElementById('similarity-score').style.color = '#10b981';
+           } else if (roundedScore >= 70) {
+               document.getElementById('similarity-score').style.color = '#f59e0b';
+           } else {
+               document.getElementById('similarity-score').style.color = '#0d9488';
+           }
+           return roundedScore;
        }
+       
+       function submitReverseAnswer() {
+           if (!isReverseMode || !targetParams) return;
+           
+           const similarity = calculateSimilarity();
+           endReverseGame(true, similarity);
+       }
+       
+       function endReverseGame(submitted, similarity = 0) {
+           if (reverseTimerInterval) clearInterval(reverseTimerInterval);
+           
+           if (submitted) {
+               // Calculate final score
+               let finalScore = similarity;
+               
+               // Bonus for time remaining
+               const timeBonus = Math.floor(reverseTimeLeft * 0.5);
+               finalScore += timeBonus;
+               
+               // Penalty for hints used
+               const hintPenalty = hintsUsed * 10;
+               finalScore -= hintPenalty;
+               
+               finalScore = Math.max(0, Math.min(100, finalScore));
+               
+               let message = "🎮 KẾT QUẢ HỌC NGƯỢC\\n\\n";
+               message += "📊 Độ khớp: " + similarity + "%\\n";
+               message += "⏱️ Thời gian còn lại: " + reverseTimeLeft + "s (+" + timeBonus + " điểm)\\n";
+               message += "💡 Gợi ý đã dùng: " + hintsUsed + " (-" + hintPenalty + " điểm)\\n";
+               message += "━━━━━━━━━━━━━━━━━━━━\\n";
+               message += "🏆 ĐIỂM TỔNG: " + finalScore + "/100\\n\\n";
+               
+               if (finalScore >= 90) {
+                   message += "🌟 XUẤT SẮC! Bạn là nhà khoa học thực thụ!";
+               } else if (finalScore >= 70) {
+                   message += "👍 TỐT LẮM! Tiếp tục phát huy!";
+               } else if (finalScore >= 50) {
+                   message += "📚 KHÁ! Cần luyện tập thêm!";
+               } else {
+                   message += "💪 CỐ GẮNG LÊN! Thử lại nhé!";
+               }
+               
+               alert(message);
+               
+               // Save to leaderboard
+               const name = prompt("Nhập tên của bạn để lưu điểm:") || "Ẩn danh";
+               saveReverseScore(name, finalScore, similarity);
+           } else {
+               alert("⏰ HẾT GIỜ!\\n\\nĐộ khớp cuối cùng: " + calculateSimilarity() + "%\\n\\nHãy thử lại nhé!");
+           }
+           
+           // Ask to play again
+           if (confirm("Bạn có muốn chơi màn mới không?")) {
+               startReverseChallenge();
+           } else {
+               quitReverseMode();
+           }
+       }
+       
+       function saveReverseScore(name, score, similarity) {
+           const data = JSON.parse(localStorage.getItem('stemlab_reverse') || '{"scores":[]}');
+           data.scores.push({ 
+               name, 
+               score, 
+               similarity,
+               date: new Date().toLocaleDateString('vi-VN') 
+           });
+           data.scores.sort((a, b) => b.score - a.score);
+           data.scores = data.scores.slice(0, 10);
+           localStorage.setItem('stemlab_reverse', JSON.stringify(data));
+       }
+
 
        // --- CHALLENGE MODE LOGIC (Thử thách) ---
        let challengeTimerInterval;
