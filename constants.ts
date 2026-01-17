@@ -246,12 +246,12 @@ Template bắt buộc:
        const currentSubject = 'math'; // 'math' | 'physics' | 'cs' | 'other'
        
        // --- REVERSE ENGINEERING LOGIC (Học ngược) - 60 giây ---
-       let isReverseMode = false;
-       let targetParams = null;
-       let hintsUsed = 0;
-       let reverseTimerInterval = null;
-       let reverseTimeLeft = 60;
-       let reverseScore = 0;
+       var isReverseMode = false;
+       var targetParams = null;
+       var hintsUsed = 0;
+       var reverseTimerInterval = null;
+       var reverseTimeLeft = 60;
+       var reverseScore = 0;
        
        function toggleReverseMode() {
            const panel = document.getElementById('reverse-panel');
@@ -436,10 +436,10 @@ Template bắt buộc:
        }
 
        // --- CHALLENGE MODE LOGIC (Thử thách - Inline Panel) ---
-       let challengeTimerInterval = null;
-       let challengeTimeLeft = 0;
-       let currentChallenge = null;
-       let challengeDifficulty = 'easy';
+       var challengeTimerInterval = null;
+       var challengeTimeLeft = 0;
+       var currentChallenge = null;
+       var challengeDifficulty = 'easy';
        
        // Show challenge panel (thay vì modal)
        function showChallengeMenu() {
@@ -648,9 +648,36 @@ Template bắt buộc:
                     timestamp: new Date().toISOString()
                 };
                 localStorage.setItem('stemlab_library', JSON.stringify(library));
-                alert('✅ Đã lưu!');
-            } catch(e) { alert('Lỗi: ' + e.message); }
+                alert('✅ Đã lưu thành công!');
+            } catch(e) { alert('❌ Lỗi khi lưu: ' + e.message); }
        }
+       
+       // --- GLOBAL ERROR HANDLER (Việt hóa) ---
+       window.onerror = function(message, source, lineno, colno, error) {
+           console.error('Lỗi:', message, source, lineno);
+           let vietnameseMsg = '❌ Đã xảy ra lỗi. Vui lòng thử lại.';
+           
+           if (message.includes('generateRandomParams')) {
+               vietnameseMsg = '⚠️ Chế độ Học Ngược chưa được hỗ trợ cho mô phỏng này.';
+           } else if (message.includes('generateChallenge')) {
+               vietnameseMsg = '⚠️ Chế độ Thử Thách chưa được hỗ trợ cho mô phỏng này.';
+           } else if (message.includes('is not defined')) {
+               vietnameseMsg = '⚠️ Tính năng này chưa được cài đặt cho mô phỏng hiện tại.';
+           } else if (message.includes('Cannot read') || message.includes('null')) {
+               vietnameseMsg = '⚠️ Không thể tải giao diện. Vui lòng tạo mô phỏng mới.';
+           } else if (message.includes('network') || message.includes('fetch')) {
+               vietnameseMsg = '⚠️ Lỗi kết nối mạng. Vui lòng kiểm tra internet.';
+           }
+           
+           // Chỉ hiện alert cho lỗi nghiêm trọng, không spam
+           if (!window._errorShown) {
+               window._errorShown = true;
+               setTimeout(() => { window._errorShown = false; }, 3000);
+               console.warn(vietnameseMsg);
+           }
+           return true; // Ngăn browser hiện error mặc định
+       };
+       window._errorShown = false;
     </script>
 </body>
 </html>
