@@ -14,8 +14,16 @@ import { ChatMessage } from './types';
 
 const Sidebar = ({ onViewChange, currentView, onLibraryOpen }: any) => (
   <aside className="w-64 glass-panel border-r border-teal-100/20 flex flex-col h-full z-20 transition-all duration-300">
-    <div className="p-6 flex items-center gap-3 cursor-pointer" onClick={() => onViewChange('home')}>
-      <img src="/logo.jpg" alt="Logo" className="size-12 rounded-xl object-cover shadow-lg" />
+    {/* Logo Section */}
+    <div className="p-4 flex justify-center border-b border-slate-100">
+      <img src="/logo.jpg" alt="Logo Trần Thị Kim Thoa" className="w-32 h-32 rounded-xl object-cover shadow-lg" />
+    </div>
+
+    {/* App Branding */}
+    <div className="p-4 flex items-center gap-3 cursor-pointer" onClick={() => onViewChange('home')}>
+      <div className="size-10 bg-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/30">
+        <span className="material-symbols-outlined text-2xl">science</span>
+      </div>
       <div>
         <h1 className="text-xl font-bold text-slate-900 tracking-tight">STEMLAB</h1>
         <p className="text-[10px] uppercase tracking-widest text-primary font-bold">Không gian ảo</p>
