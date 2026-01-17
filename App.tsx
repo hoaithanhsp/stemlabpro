@@ -48,12 +48,11 @@ const Sidebar = ({ onViewChange, currentView, onLibraryOpen }: any) => (
     </nav>
     <div className="p-4 border-t border-slate-200/50">
       <div className="flex items-center gap-3 p-2 bg-slate-50 rounded-xl border border-slate-100">
-        <div className="size-10 rounded-lg bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">
-          AJ
-        </div>
+        <img src="/logo.jpg" alt="Logo" className="size-10 rounded-lg object-cover" />
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-bold text-slate-900 truncate">Alex Johnson</p>
-          <p className="text-[10px] text-slate-500">Chuyên ngành Vật lý</p>
+          <p className="text-xs font-bold text-slate-900 truncate">Trần Thị Kim Thoa</p>
+          <p className="text-[10px] text-slate-500">Trường TTHPT Hoàng Diệu</p>
+          <p className="text-[9px] text-slate-400 truncate">Số 1 Mạc Đĩnh Chi, P. Phú Lợi, TP. Cần Thơ</p>
         </div>
         <span className="material-symbols-outlined text-slate-400 text-sm">unfold_more</span>
       </div>
@@ -315,8 +314,8 @@ function App() {
             <button
               onClick={() => setShowApiKeyModal(true)}
               className={`h-9 px-4 flex items-center gap-2 rounded-full text-sm font-bold transition-all ${hasValidApiKey
-                  ? 'bg-green-50 text-green-600 hover:bg-green-100'
-                  : 'bg-red-50 text-red-500 hover:bg-red-100'
+                ? 'bg-green-50 text-green-600 hover:bg-green-100'
+                : 'bg-red-50 text-red-500 hover:bg-red-100'
                 }`}
               title="Cài đặt API Key"
             >
@@ -369,8 +368,8 @@ function App() {
                   <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                     <div
                       className={`max-w-[85%] rounded-2xl px-5 py-3 shadow-sm text-sm leading-relaxed ${msg.role === 'user'
-                          ? 'bg-primary text-white rounded-br-sm'
-                          : 'bg-white border border-slate-100 text-slate-800 rounded-bl-sm'
+                        ? 'bg-primary text-white rounded-br-sm'
+                        : 'bg-white border border-slate-100 text-slate-800 rounded-bl-sm'
                         } ${msg.isError ? 'bg-red-50 border-red-200 text-red-600' : ''}`}
                     >
                       <ReactMarkdown
