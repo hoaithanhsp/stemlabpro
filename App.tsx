@@ -449,6 +449,29 @@ function App() {
                   <div className="flex gap-2">
                     <button
                       onClick={() => {
+                        const name = prompt('Nhập tên mô phỏng để lưu:');
+                        if (!name) return;
+                        try {
+                          const library = JSON.parse(localStorage.getItem('stemlab_library') || '{}');
+                          library[name] = {
+                            title: name,
+                            subject: 'other',
+                            html: currentCode,
+                            timestamp: new Date().toISOString()
+                          };
+                          localStorage.setItem('stemlab_library', JSON.stringify(library));
+                          alert('✅ Đã lưu vào thư viện!');
+                        } catch (e) {
+                          alert('Lỗi: ' + (e as Error).message);
+                        }
+                      }}
+                      className="text-xs bg-primary text-white px-3 py-1.5 rounded-lg hover:bg-primary-dark transition-colors flex items-center gap-1 font-semibold shadow-sm"
+                    >
+                      <span className="material-symbols-outlined text-sm">bookmark_add</span>
+                      Lưu Thư Viện
+                    </button>
+                    <button
+                      onClick={() => {
                         const blob = new Blob([currentCode], { type: 'text/html' });
                         const url = URL.createObjectURL(blob);
                         const a = document.createElement('a');
